@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FirstFragment">
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.huahua.chaoxing.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first">
+        <action
+            android:id="@+id/action_FirstFragment_to_qrLoginFragment"
+            app:destination="@id/qrLoginFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_FirstFragment_to_userLoginFragment"
+            app:destination="@id/userLoginFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_FirstFragment_to_userInfo"
+            app:destination="@id/userInfo"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/qrLoginFragment"
+        android:name="com.huahua.chaoxing.login.qr.QrLoginFragment"
+        android:label="qr_login_fragment"
+        tools:layout="@layout/qr_login_fragment">
+        <action
+            android:id="@+id/action_qrLoginFragment_to_userInfo"
+            app:destination="@id/userInfo"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/userLoginFragment"
+        android:name="com.huahua.chaoxing.login.userlogin.UserLoginFragment"
+        android:label="user_login_fragment"
+        tools:layout="@layout/user_login_fragment">
+        <action
+            android:id="@+id/action_userLoginFragment_to_userInfo"
+            app:destination="@id/userInfo"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <activity
+        android:id="@+id/userInfo"
+        android:name="com.huahua.chaoxing.userinfo.UserInfo"
+        android:label="activity_user_info"
+        app:startDestination="@id/userInfo"
+        tools:layout="@layout/activity_user_info" />
+
+</navigation>
