@@ -1,7 +1,6 @@
 package com.huahua.chaoxing.userinfo.sign;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +28,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
+
 public class SignText extends Fragment implements SignAdapter.ClickListener {
 
-    Handler handler = new Handler();
+    private static boolean isStart = false;
+    private static boolean isOneStart = false;
     private List<SignBean> signBeans = new ArrayList<>();
     private PageViewModel mViewModel;
     private SignTextFragmentBinding root;
@@ -67,12 +68,6 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         mViewModel.getRefresh().observe(getViewLifecycleOwner(), aBoolean -> {
             String name = (String) mViewModel.getTemp().get("name");
             root.name.setText(name);
-            ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
-            try {
-                startSign(classBeans);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         });
         signAdapter = new SignAdapter(requireActivity(), signBeans);
         signAdapter.setOnClickListener(this);
@@ -85,10 +80,26 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                 .dontAnimate()
                 .into(root.imageView);
 
+        root.sign.setOnClickListener(v -> {
+            ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+            startSign(classBeans);
+        });
+
+        root.autoSign.setOnClickListener(v -> {
+            ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+            startAutoSign(classBeans);
+        });
     }
 
-    private synchronized void startSign(ArrayList<ClassBean> classBeans) throws InterruptedException, IOException {
+    private synchronized void startAutoSign(ArrayList<ClassBean> classBeans) {
+        if (isStart == true) {
+            Toasty.info(requireActivity(), "请勿重复执行").show();
+        }
+        long signTime = Long.parseLong((String) SPUtils.get(requireActivity(), "signTime", "60")) * 1000;
+        isStart = true;
+        Toasty.info(requireActivity(), "开始自动签到  扫面周期" + signTime / 1000 + "秒").show();
         if (classBeans == null) {
+            Toasty.info(requireActivity(), "无课程信息").show();
             return;
         }
         runnable = new Runnable() {
@@ -163,8 +174,6 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                         requireActivity().runOnUiThread(() -> {
                             signAdapter.notifyItemChanged(0);
                         });
-                        long signTime = Long.parseLong((String) SPUtils.get(requireActivity(), "signTime", "60")) * 1000;
-                        System.out.println(signTime);
                         Thread.sleep(signTime);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -176,9 +185,96 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         thread.start();
     }
 
+    private synchronized void startSign(ArrayList<ClassBean> classBeans) {
+        if (isOneStart == true) {
+            Toasty.warning(requireActivity(), "正在签到中了").show();
+            return;
+        }
+        isOneStart = true;
+        Toasty.info(requireActivity(), "开始签到中").show();
+        if (classBeans == null) {
+            Toasty.info(requireActivity(), "无课程信息").show();
+            return;
+        }
+        new Thread(new Runnable() {
+            private Elements elements;
+
+            @Override
+            public void run() {
+                System.out.println("签到运行");
+                signBeans.clear();
+                for (int i = 0; i < classBeans.size(); i++) {
+                    String url = classBeans.get(i).getUrl();
+                    try {
+                        Connection.Response response = Jsoup.connect(url).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
+                        Document document = response.parse();
+                        elements = document.select("#startList div .Mct");
+                        if (elements == null || elements.size() == 0) {
+                            System.out.println("无签到活动");
+                            continue;
+                        }
+                        for (Element ele : elements) {
+                            String onclick = ele.attr("onclick");
+                            System.out.println(onclick);
+                            if (onclick != null && onclick.length() > 0) {
+                                String split = onclick.split("\\(")[1];
+                                String activeId = split.split(",")[0];
+                                System.out.println(split);
+                                System.out.println(activeId);
+                                System.out.println("保存的数据" + mViewModel.getTemp().get(activeId));
+                                if (mViewModel.getTemp().get(activeId) != null) {
+                                    SignBean signBean = new SignBean();
+                                    signBean.setSignClass(classBeans.get(i).getClassName());
+                                    signBean.setSignName(classBeans.get(i).getClassmate());
+                                    signBean.setSignState("签到成功");
+                                    signBean.setSignTime(ele.select(".Color_Orang").text());
+                                    signBeans.add(signBean);
+                                    continue;
+                                }
+                                String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
+                                        + URLDecoder.decode(mViewModel.getTemp().get("name").toString())
+                                        + "&address="
+                                        + mViewModel.getTemp().get("signPlace")
+                                        + "&activeId="
+                                        + activeId
+                                        + "&uid="
+                                        + mViewModel.getCookies().get("_uid")
+                                        + "&clientip=&latitude=-1&longitude=-1&fid="
+                                        + mViewModel.getCookies().get("fid")
+                                        + "&appType=15&ifTiJiao=1";
+                                System.out.println(signUrl);
+                                System.out.println("==============" + activeId + "签到中=================");
+                                Connection.Response signResponse = Jsoup.connect(signUrl).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
+                                Element element = signResponse.parse().body();
+                                System.out.println("签到状态" + element.getElementsByTag("body").text());
+                                SignBean signBean = new SignBean();
+                                signBean.setSignClass(classBeans.get(i).getClassName());
+                                signBean.setSignName(classBeans.get(i).getClassmate());
+                                signBean.setSignState(element.getElementsByTag("body").text());
+                                signBean.setSignTime(ele.select(".Color_Orang").text());
+                                if (signBean.getSignState().equals("您已签到过了")) {
+                                    mViewModel.setTemp(activeId, "签到成功");
+                                }
+                                signBeans.add(signBean);
+                                Thread.sleep(1000);
+                            }
+                        }
+//                            System.out.println(signBeans);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                isOneStart = false;
+                requireActivity().runOnUiThread(() -> {
+                    signAdapter.notifyItemChanged(0);
+
+                });
+            }
+        }).start();
+    }
 
     @Override
     public void onClick(View view, int position) {
-        Toast.makeText(requireActivity(), "emmmmmmm", Toast.LENGTH_SHORT).show();
+        Toasty.info(requireActivity(), "emmmmmmm", Toast.LENGTH_SHORT).show();
     }
 }

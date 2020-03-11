@@ -19,6 +19,8 @@ import com.huahua.chaoxing.util.DataUtil;
 import java.io.IOException;
 import java.util.HashMap;
 
+import es.dmoral.toasty.Toasty;
+
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding root;
@@ -59,7 +61,7 @@ public class FirstFragment extends Fragment {
             e.printStackTrace();
         }
         if (map != null) {
-            Toast.makeText(requireActivity(), "自动登录中", Toast.LENGTH_SHORT).show();
+            Toasty.info(requireActivity(), "自动登录中", Toast.LENGTH_SHORT).show();
             NavHostFragment.findNavController(FirstFragment.this)
                     .navigate(R.id.action_FirstFragment_to_userInfo);
             requireActivity().finish();

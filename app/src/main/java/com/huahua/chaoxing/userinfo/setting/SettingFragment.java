@@ -25,6 +25,8 @@ import com.tencent.bugly.beta.Beta;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
+import es.dmoral.toasty.Toasty;
+
 /**
  * @author Administrator
  */
@@ -55,7 +57,7 @@ public class SettingFragment extends Fragment {
                 String url = "mqqwpa://im/chat?chat_type=wpa&uin=1986754601";//uin是发送过去的qq号码
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
             } catch (Exception e) {
-                Toast.makeText(requireActivity(), "请先安装qq", Toast.LENGTH_SHORT).show();
+                Toasty.info(requireActivity(), "请先安装qq", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         });
@@ -71,7 +73,7 @@ public class SettingFragment extends Fragment {
                         CharSequence text = builder.getEditText().getText();
                         if (text != null) {
                             SPUtils.put(requireActivity(), "signPlace", URLEncoder.encode(text.toString()));
-                            Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+                            Toasty.info(getActivity(), String.valueOf(text), Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         }
                     })
@@ -92,7 +94,7 @@ public class SettingFragment extends Fragment {
                     .setCheckedIndex(selectIndex)
                     .addItems(items, (dialog, which) -> builder.setCheckedIndex(which))
                     .addAction("确定", (dialog, index) -> {
-                        Toast.makeText(getActivity(), "你选择了 " + items[builder.getCheckedIndex()], Toast.LENGTH_SHORT).show();
+                        Toasty.info(getActivity(), "你选择了 " + items[builder.getCheckedIndex()], Toast.LENGTH_SHORT).show();
                         SPUtils.put(requireActivity(), "signTime", items[builder.getCheckedIndex()]);
                         dialog.dismiss();
                     }).show();
@@ -106,8 +108,18 @@ public class SettingFragment extends Fragment {
         root.signOut.setOnClickListener(v -> {
             new DataUtil(requireActivity()).clearMap();
             requireActivity().finish();
-            Toast.makeText(requireActivity(), "请重新打开", Toast.LENGTH_SHORT).show();
+            Toasty.info(requireActivity(), "请重新打开", Toast.LENGTH_SHORT).show();
 
+        });
+
+        root.github.setOnClickListener(v -> {
+            // 打开网址 这个是通过打开android自带的浏览器进行的打开网址
+            Uri uri = Uri.parse("https://github.com/aihuahua-522/chaoxing-test");
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                startActivity(intent);
+                Toasty.info(requireActivity(), "点个爱心可好", Toast.LENGTH_SHORT).show();
+            }
         });
 
     }

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
@@ -28,6 +27,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+
+import es.dmoral.toasty.Toasty;
 
 /**
  * A fragment representing a list of Items.
@@ -89,7 +90,7 @@ public class MyClassFragment extends Fragment {
                 classDocument = Jsoup.connect(getClassUrl).cookies(cookies).get();
 //                System.out.println(classDocument);
                 if (classDocument.title().contains("用户登录")) {
-                    Toast.makeText(requireActivity(), "cookies失效,请重新登录", Toast.LENGTH_SHORT).show();
+                    Toasty.info(requireActivity(), "cookies失效,请重新登录").show();
                     return;
                 }
             } catch (IOException e) {
@@ -139,7 +140,7 @@ public class MyClassFragment extends Fragment {
     }
 
     public void onListFragmentInteraction(ClassBean item) {
-        Toast.makeText(requireActivity(), item.toString(), Toast.LENGTH_SHORT).show();
+        Toasty.info(requireActivity(), item.toString()).show();
     }
 
     public interface OnListFragmentInteractionListener {

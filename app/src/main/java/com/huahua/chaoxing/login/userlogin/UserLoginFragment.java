@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import es.dmoral.toasty.Toasty;
 
 public class UserLoginFragment extends Fragment {
 
@@ -69,7 +70,7 @@ public class UserLoginFragment extends Fragment {
                     } else {
                         requireActivity().runOnUiThread(() -> {
                             try {
-                                Toast.makeText(requireActivity(), response.parse().toString(), Toast.LENGTH_SHORT).show();
+                                Toasty.info(requireActivity(), response.parse().toString()).show();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }

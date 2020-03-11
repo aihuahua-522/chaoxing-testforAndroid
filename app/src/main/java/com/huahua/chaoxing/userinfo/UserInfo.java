@@ -2,7 +2,6 @@ package com.huahua.chaoxing.userinfo;
 
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
@@ -18,6 +17,8 @@ import com.qmuiteam.qmui.util.QMUIStatusBarHelper;
 
 import java.io.IOException;
 import java.util.HashMap;
+
+import es.dmoral.toasty.Toasty;
 
 public class UserInfo extends AppCompatActivity {
 
@@ -50,7 +51,7 @@ public class UserInfo extends AppCompatActivity {
             e.printStackTrace();
         }
         if (map != null) {
-            Toast.makeText(this, "自动登陆中(无数据尝试退出登录)", Toast.LENGTH_SHORT).show();
+            Toasty.info(this, "自动登陆中(无数据尝试退出登录)").show();
         }
         pageViewModel.setCookies(map);
         root.viewPager.setAdapter(sectionsPagerAdapter);
@@ -58,7 +59,6 @@ public class UserInfo extends AppCompatActivity {
         root.viewPager.setOffscreenPageLimit(2);
         root.fab.setOnClickListener(view -> Snackbar.make(view, "等待添加", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
-
     }
 
 

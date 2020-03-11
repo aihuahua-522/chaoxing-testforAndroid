@@ -78,3 +78,27 @@ file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
 sha1=f864064cf3da291cf28f6aad069346fd76d0502d
 appId=adea638331
 
+file=F:\project\chaoxingtest\app\build\outputs\mapping\debug\mapping.txt
+sha1=a57a2442b3ac0e8557de5e4e47adc967597ddb6d
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=e8ba0ffda82c3eb098a988a99ceb0d83bb256d18
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\debug\mapping.txt
+sha1=57964a2c938700c9027ae757cb30b9dcc3c1ca35
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=1cab96713a3ccb0b307558557a9a8f5afaf8abd6
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\debug\mapping.txt
+sha1=57964a2c938700c9027ae757cb30b9dcc3c1ca35
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=1cab96713a3ccb0b307558557a9a8f5afaf8abd6
+appId=adea638331
+

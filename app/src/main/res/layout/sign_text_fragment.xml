@@ -39,12 +39,12 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_marginStart="3dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="3dp"
             android:background="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/signText" />
+            app:layout_constraintTop_toBottomOf="@+id/sign" />
 
         <TextView
             android:id="@+id/signText"
@@ -63,9 +63,35 @@
             android:id="@+id/signRecycle"
             android:layout_width="409dp"
             android:layout_height="440dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/view" />
+
+        <Button
+            android:id="@+id/sign"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/btn"
+            android:text="手动开始签到"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/autoSign" />
+
+        <Button
+            android:id="@+id/autoSign"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/btn"
+            android:text="自动后台签到"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
