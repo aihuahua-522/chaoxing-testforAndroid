@@ -106,3 +106,15 @@ file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
 sha1=44a044537370af1da7a424537c32f72b24acf784
 appId=adea638331
 
+file=F:\project\chaoxingtest\app\build\outputs\mapping\debug\mapping.txt
+sha1=95c902f6823f06042fae5a57901ee4cff0672715
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\debug\mapping.txt
+sha1=95c902f6823f06042fae5a57901ee4cff0672715
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=44a044537370af1da7a424537c32f72b24acf784
+appId=adea638331
+

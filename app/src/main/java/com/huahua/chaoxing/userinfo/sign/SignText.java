@@ -102,10 +102,10 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         root.autoSign.setOnClickListener(v -> {
             if (isAutoSign.get() == false) {
                 ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
-                int time = (int) SPUtils.get(requireActivity(), "signTime", 60) * 1000;
+                String timestr = (String) SPUtils.get(requireActivity(), "signTime", "60");
                 HashMap<String, String> temp = new HashMap<>();
                 temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
-                temp.put("signTime", String.valueOf(time));
+                temp.put("signTime", timestr);
                 SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans);
                 isAutoSign.set(true);
                 return;

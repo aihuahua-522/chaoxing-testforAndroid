@@ -235,12 +235,12 @@ public class SignService extends IntentService {
                     sb.append(signBeans.get(i).getSignClass() + signBeans.get(i).getSignState() + signBeans.get(i).getSignTime()).append("\n");
                 }
                 sb.append(DateUtil.getThisTime()).append("扫描完成 正在进行的个数").append(signBeans.size()).append("\n").append("成功签到个数").append(success).append("\n");
-                sb.append("扫描周期" + Long.parseLong(temp.get("signTime"))).append("\n");
+                sb.append("扫描周期" + Long.parseLong(temp.get("signTime"))).append("s").append("\n");
                 Message message = new Message();
                 message.obj = sb.toString();
                 handler.sendMessage(message);
             }
-            Thread.sleep(Long.parseLong(temp.get("signTime")));
+            Thread.sleep(Long.parseLong(temp.get("signTime")) * 1000);
 //            Thread.sleep(6000);
 
 
