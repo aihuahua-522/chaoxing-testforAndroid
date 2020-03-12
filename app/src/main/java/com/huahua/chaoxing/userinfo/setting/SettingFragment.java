@@ -15,6 +15,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.huahua.chaoxing.MainActivity;
 import com.huahua.chaoxing.R;
 import com.huahua.chaoxing.databinding.SettingFragmentBinding;
 import com.huahua.chaoxing.util.DataUtil;
@@ -107,9 +108,14 @@ public class SettingFragment extends Fragment {
 
         root.signOut.setOnClickListener(v -> {
             new DataUtil(requireActivity()).clearMap();
-            requireActivity().finish();
-            Toasty.info(requireActivity(), "请重新打开", Toast.LENGTH_SHORT).show();
+//            android.os.Process.killProcess(android.os.Process.myPid());    //获取PID
+//            System.exit(0);   //常规java、c#的标准退出法，返回值为0代表正常退出
+//            Toasty.info(requireActivity(), "已退出登录", Toast.LENGTH_SHORT).show();
 
+            Intent intent = new Intent(requireContext(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            android.os.Process.killProcess(android.os.Process.myPid());
         });
 
         root.github.setOnClickListener(v -> {
@@ -123,5 +129,6 @@ public class SettingFragment extends Fragment {
         });
 
     }
+
 
 }

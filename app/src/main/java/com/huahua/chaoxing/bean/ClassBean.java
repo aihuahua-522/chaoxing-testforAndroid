@@ -1,6 +1,8 @@
 package com.huahua.chaoxing.bean;
 
-public class ClassBean {
+import java.io.Serializable;
+
+public class ClassBean implements Serializable {
     private String url;
     private String courseId;
     private String classId;

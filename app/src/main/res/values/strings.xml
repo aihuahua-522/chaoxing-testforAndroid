@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">chaoxing-test</string>
+    <string name="app_name">超星签到助手</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
