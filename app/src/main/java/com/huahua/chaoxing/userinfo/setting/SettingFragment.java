@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.huahua.chaoxing.MainActivity;
 import com.huahua.chaoxing.R;
 import com.huahua.chaoxing.databinding.SettingFragmentBinding;
+import com.huahua.chaoxing.userinfo.ui.main.PageViewModel;
 import com.huahua.chaoxing.util.DataUtil;
 import com.huahua.chaoxing.util.SPUtils;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
@@ -33,7 +34,7 @@ import es.dmoral.toasty.Toasty;
  */
 public class SettingFragment extends Fragment {
 
-    private SettingViewModel mViewModel;
+    private PageViewModel mViewModel;
     private SettingFragmentBinding root;
 
     public static SettingFragment newInstance() {
@@ -50,7 +51,7 @@ public class SettingFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(SettingViewModel.class);
+        mViewModel = ViewModelProviders.of(requireActivity()).get(PageViewModel.class);
         // TODO: Use the ViewModel
         root.talkMe.setOnClickListener(v -> {
             try {
@@ -74,7 +75,8 @@ public class SettingFragment extends Fragment {
                         CharSequence text = builder.getEditText().getText();
                         if (text != null) {
                             SPUtils.put(requireActivity(), "signPlace", URLEncoder.encode(text.toString()));
-                            Toasty.info(getActivity(), String.valueOf(text), Toast.LENGTH_SHORT).show();
+                            mViewModel.setTemp("signPlace", text);
+                            Toasty.info(getActivity(), text + "\n 自动签到时重启生效", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         }
                     })
@@ -95,8 +97,9 @@ public class SettingFragment extends Fragment {
                     .setCheckedIndex(selectIndex)
                     .addItems(items, (dialog, which) -> builder.setCheckedIndex(which))
                     .addAction("确定", (dialog, index) -> {
-                        Toasty.info(getActivity(), "你选择了 " + items[builder.getCheckedIndex()], Toast.LENGTH_SHORT).show();
+                        Toasty.info(getActivity(), "你选择了 " + items[builder.getCheckedIndex()] + "\n 自动签到时重启生效", Toast.LENGTH_SHORT).show();
                         SPUtils.put(requireActivity(), "signTime", items[builder.getCheckedIndex()]);
+                        mViewModel.setTemp("signTime", items[builder.getCheckedIndex()]);
                         dialog.dismiss();
                     }).show();
         });

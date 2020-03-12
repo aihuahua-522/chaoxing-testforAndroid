@@ -106,6 +106,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                 HashMap<String, String> temp = new HashMap<>();
                 temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
                 temp.put("signTime", timestr);
+                temp.put("signPlace", Objects.requireNonNull(mViewModel.getTemp().get("signPlace")).toString());
                 SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans);
                 isAutoSign.set(true);
                 return;
