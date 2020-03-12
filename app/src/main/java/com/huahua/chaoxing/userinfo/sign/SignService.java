@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.view.View.FOCUS_DOWN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -82,7 +84,7 @@ public class SignService extends IntentService {
         View view = LayoutInflater.from(context).inflate(R.layout.float_view, null);
         view.setAlpha((float) 0.6);
         View floatImg = view.findViewById(R.id.floatImg);
-        View signLogMain = view.findViewById(R.id.signLogMain);
+        ScrollView signLogMain = view.findViewById(R.id.signLogMain);
         signLogText = view.findViewById(R.id.signLog);
         view.setOnTouchListener(new View.OnTouchListener() {
             private int x;
@@ -121,6 +123,7 @@ public class SignService extends IntentService {
                         }
                         layoutParams.width = MATCH_PARENT;
                         signLogMain.setVisibility(View.VISIBLE);
+                        signLogMain.fullScroll(FOCUS_DOWN);
                         if (windowManager != null) {
                             windowManager.updateViewLayout(view, layoutParams);
                         }
