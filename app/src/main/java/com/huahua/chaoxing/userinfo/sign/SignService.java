@@ -33,7 +33,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static android.view.View.FOCUS_DOWN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -49,7 +48,6 @@ public class SignService extends IntentService {
     private static final String ACTION_SIGN = "com.huahua.startSign";
     private static TextView signLogText;
     private static WindowManager.LayoutParams layoutParams;
-    private boolean wantSign = true;
     private Handler handler = new Handler() {
 
         @Override
@@ -123,7 +121,7 @@ public class SignService extends IntentService {
                         }
                         layoutParams.width = MATCH_PARENT;
                         signLogMain.setVisibility(View.VISIBLE);
-                        signLogMain.fullScroll(FOCUS_DOWN);
+                        signLogMain.fullScroll(ScrollView.FOCUS_DOWN);//滑到底部
                         if (windowManager != null) {
                             windowManager.updateViewLayout(view, layoutParams);
                         }
@@ -132,7 +130,6 @@ public class SignService extends IntentService {
                 }
                 return false;
             }
-
         });
         windowManager.addView(view, layoutParams);
         Intent intent = new Intent(context, SignService.class);
@@ -167,7 +164,7 @@ public class SignService extends IntentService {
 
     private void handleAction(HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans) throws Exception {
         StringBuilder sb = new StringBuilder();
-        while (wantSign) {
+        while (true) {
             ArrayList<SignBean> signBeans = new ArrayList<>();
             if (classBeans != null && classBeans.size() != 0) {
                 sb.append("开始签到").append(DateUtil.getThisTime()).append("\n");
@@ -201,7 +198,7 @@ public class SignService extends IntentService {
                                 continue;
                             }
                             String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                    + URLDecoder.decode(temp.get("name"))
+                                    + URLDecoder.decode(temp.get("name"), "utf-8")
                                     + "&address="
                                     + temp.get("signPlace")
                                     + "&activeId="
@@ -225,7 +222,7 @@ public class SignService extends IntentService {
                             signBean.setSignName(classBeans.get(i).getClassmate());
                             signBean.setSignState(element.getElementsByTag("body").text());
                             signBean.setSignTime(ele.select(".Color_Orang").text());
-                            if (signBean.getSignState().equals("您已签到过了")) {
+                            if ("您已签到过了".equals(signBean.getSignState())) {
                                 temp.put(activeId, "签到成功");
                                 success++;
                             }
@@ -250,8 +247,5 @@ public class SignService extends IntentService {
         }
     }
 
-    public void setWantSign(boolean wantSign) {
-        this.wantSign = wantSign;
-    }
 
 }

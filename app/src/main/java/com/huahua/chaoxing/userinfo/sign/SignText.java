@@ -1,6 +1,5 @@
 package com.huahua.chaoxing.userinfo.sign;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
@@ -46,13 +44,8 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
     private PageViewModel mViewModel;
     private SignTextFragmentBinding root;
     private SignAdapter signAdapter;
-    private Runnable runnable;
-    private Thread thread;
     private boolean firstLoad = false;
 
-    public static SignText newInstance() {
-        return new SignText();
-    }
 
     @Override
     public void onResume() {
@@ -71,7 +64,6 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         return root.getRoot();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -100,8 +92,12 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         });
 
         root.autoSign.setOnClickListener(v -> {
-            if (isAutoSign.get() == false) {
+            if (mViewModel.getTemp() != null && isAutoSign.get() == false) {
                 ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+                if (classBeans == null) {
+                    Toasty.error(requireActivity(), "未获取到课程信息").show();
+                    return;
+                }
                 String timestr = (String) SPUtils.get(requireActivity(), "signTime", "60");
                 HashMap<String, String> temp = new HashMap<>();
                 temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
@@ -130,6 +126,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
         Toasty.info(requireActivity(), "开始签到中").show();
         if (classBeans == null) {
             Toasty.info(requireActivity(), "无课程信息").show();
+            isOneStart = false;
             return;
         }
         new Thread(new Runnable() {
@@ -139,6 +136,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
             public void run() {
                 System.out.println("签到运行");
                 signBeans.clear();
+                requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0));
                 for (int i = 0; i < classBeans.size(); i++) {
                     String url = classBeans.get(i).getUrl();
                     try {
@@ -168,7 +166,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                     continue;
                                 }
                                 String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                        + URLDecoder.decode(mViewModel.getTemp().get("name").toString())
+                                        + URLDecoder.decode(mViewModel.getTemp().get("name").toString(), "utf-8")
                                         + "&address="
                                         + mViewModel.getTemp().get("signPlace")
                                         + "&activeId="
@@ -188,7 +186,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                 signBean.setSignName(classBeans.get(i).getClassmate());
                                 signBean.setSignState(element.getElementsByTag("body").text());
                                 signBean.setSignTime(ele.select(".Color_Orang").text());
-                                if (signBean.getSignState().equals("您已签到过了")) {
+                                if ("您已签到过了".equals(signBean.getSignState())) {
                                     mViewModel.setTemp(activeId, "签到成功");
                                 }
                                 signBeans.add(signBean);

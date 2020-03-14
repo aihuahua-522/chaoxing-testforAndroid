@@ -19,5 +19,9 @@ public class MyApplication extends Application {
         super.onCreate();
         Bugly.init(getApplicationContext(), "adea638331", true);
         Beta.autoCheckUpgrade = true;
+        // 异常处理，不需要处理时注释掉这两句即可！
+        CrashHandler crashHandler = CrashHandler.getInstance();
+        // 注册crashHandler
+        crashHandler.init(getApplicationContext());
     }
 }

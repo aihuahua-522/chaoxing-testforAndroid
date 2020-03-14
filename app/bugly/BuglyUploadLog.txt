@@ -130,3 +130,11 @@ file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
 sha1=acd648de43184652388ac964d1aabd494a0423cc
 appId=adea638331
 
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=27978a58857cce86c5941babc4cee205a7697963
+appId=adea638331
+
+file=F:\project\chaoxingtest\app\build\outputs\mapping\release\mapping.txt
+sha1=1021fe79710a11b25e05a2898a25792baa9d490d
+appId=adea638331
+

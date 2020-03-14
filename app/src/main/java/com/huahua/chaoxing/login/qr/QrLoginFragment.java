@@ -93,7 +93,6 @@ public class QrLoginFragment extends Fragment {
                 dataMap.put("uuid", uuid);
                 dataMap.put("enc", enc);
                 loadQrUrl(scanningUrl);
-                //Connection.Response saveImageResponse = Jsoup.connect(scanningUrl).execute();
             }
         });
         thread.start();

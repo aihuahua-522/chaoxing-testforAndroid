@@ -24,6 +24,7 @@ import com.huahua.chaoxing.util.SPUtils;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.tencent.bugly.beta.Beta;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
@@ -74,7 +75,12 @@ public class SettingFragment extends Fragment {
                     .addAction("确定", (dialog, index) -> {
                         CharSequence text = builder.getEditText().getText();
                         if (text != null) {
-                            SPUtils.put(requireActivity(), "signPlace", URLEncoder.encode(text.toString()));
+                            try {
+                                SPUtils.put(requireActivity(), "signPlace", URLEncoder.encode(text.toString(), "utf-8"));
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                                Toasty.error(requireActivity(), e.getMessage()).show();
+                            }
                             mViewModel.setTemp("signPlace", text);
                             Toasty.info(getActivity(), text + "\n 自动签到时重启生效", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
@@ -91,7 +97,7 @@ public class SettingFragment extends Fragment {
             } else if (signTime == 180) {
                 selectIndex = 2;
             }
-            final String[] items = new String[]{"30", "60", "180"};
+            final String[] items = new String[]{"30", "60", "180", "300", "600"};
             final QMUIDialog.CheckableDialogBuilder builder = new QMUIDialog.CheckableDialogBuilder(requireActivity());
             builder.setTitle("请选择扫描时间(单位为秒)")
                     .setCheckedIndex(selectIndex)
@@ -111,10 +117,6 @@ public class SettingFragment extends Fragment {
 
         root.signOut.setOnClickListener(v -> {
             new DataUtil(requireActivity()).clearMap();
-//            android.os.Process.killProcess(android.os.Process.myPid());    //获取PID
-//            System.exit(0);   //常规java、c#的标准退出法，返回值为0代表正常退出
-//            Toasty.info(requireActivity(), "已退出登录", Toast.LENGTH_SHORT).show();
-
             Intent intent = new Intent(requireContext(), MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);

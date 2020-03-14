@@ -41,7 +41,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     @NonNull
     @Override
     public Fragment getItem(int position) {
-//        return MyClassFragment.newInstance(position + 1);
         return fragments.get(position);
     }
 

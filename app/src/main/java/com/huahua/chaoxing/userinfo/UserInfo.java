@@ -50,7 +50,6 @@ public class UserInfo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         root = DataBindingUtil.setContentView(this, R.layout.activity_user_info);
-//        ImmersionBar.with(this).statusBarDarkFont(true).init();
         QMUIStatusBarHelper.setStatusBarLightMode(this);
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
         dataUtil = new DataUtil(this);

@@ -24,9 +24,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
 
@@ -83,18 +83,27 @@ public class MyClassFragment extends Fragment {
             String getName = "http://i.chaoxing.com/base";
             Document classDocument = null;
             try {
+                if (viewModel == null) {
+                    viewModel = ViewModelProviders.of(requireActivity()).get(PageViewModel.class);
+                    return;
+                }
                 Map<String, String> cookies = viewModel.getCookies();
                 String text = Jsoup.connect(getName).cookies(cookies).get().select(".user-name").text();
                 System.out.println("name = " + text);
                 viewModel.setTemp("name", text);
                 classDocument = Jsoup.connect(getClassUrl).cookies(cookies).get();
+                if (classDocument == null) {
+                    Toasty.error(requireActivity(), "未检测到课程信息").show();
+                    return;
+                }
 //                System.out.println(classDocument);
                 if (classDocument.title().contains("用户登录")) {
                     Toasty.info(requireActivity(), "cookies失效,请重新登录").show();
                     return;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Toasty.error(requireActivity(), Objects.requireNonNull(e.getMessage())).show();
             }
             Elements classElements = classDocument.select(".ulDiv > ul > li[style]");
             for (Element classElement : classElements) {
