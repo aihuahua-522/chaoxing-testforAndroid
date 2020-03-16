@@ -27,7 +27,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +170,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                     continue;
                                 }
                                 String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                        + URLDecoder.decode(mViewModel.getTemp().get("name").toString(), "utf-8")
+                                        + URLEncoder.encode(mViewModel.getTemp().get("name").toString(), "utf-8")
                                         + "&address="
                                         + mViewModel.getTemp().get("signPlace")
                                         + "&activeId="
@@ -179,7 +179,8 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                         + mViewModel.getCookies().get("_uid")
                                         + "&clientip=&latitude=-1&longitude=-1&fid="
                                         + mViewModel.getCookies().get("fid")
-                                        + "&appType=15&ifTiJiao=1";
+                                        + "&appType=15&ifTiJiao=1"
+                                        + "&objectId=75abb7062e22a03fd5612931888b250d";
                                 System.out.println(signUrl);
                                 System.out.println("==============" + activeId + "签到中=================");
                                 Connection.Response signResponse = Jsoup.connect(signUrl).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();

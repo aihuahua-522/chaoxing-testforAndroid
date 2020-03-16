@@ -29,7 +29,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -206,7 +206,7 @@ public class SignService extends IntentService {
                                 continue;
                             }
                             String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                    + URLDecoder.decode(temp.get("name"), "utf-8")
+                                    + URLEncoder.encode(temp.get("name"), "utf-8")
                                     + "&address="
                                     + temp.get("signPlace")
                                     + "&activeId="
@@ -215,7 +215,8 @@ public class SignService extends IntentService {
                                     + cookies.get("_uid")
                                     + "&clientip=&latitude=-1&longitude=-1&fid="
                                     + cookies.get("fid")
-                                    + "&appType=15&ifTiJiao=1";
+                                    + "&appType=15&ifTiJiao=1"
+                                    + "&objectId=75abb7062e22a03fd5612931888b250d";
                             System.out.println(signUrl);
                             System.out.println("==============" + activeId + "签到中=================");
                             Connection.Response signResponse = Jsoup.connect(signUrl).cookies(cookies).method(Connection.Method.GET).timeout(30000).execute();
