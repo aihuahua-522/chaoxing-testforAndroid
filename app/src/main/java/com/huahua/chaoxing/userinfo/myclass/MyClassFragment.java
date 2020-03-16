@@ -93,17 +93,17 @@ public class MyClassFragment extends Fragment {
                 viewModel.setTemp("name", text);
                 classDocument = Jsoup.connect(getClassUrl).cookies(cookies).get();
                 if (classDocument == null) {
-                    Toasty.error(requireActivity(), "未检测到课程信息").show();
+                    requireActivity().runOnUiThread(() -> Toasty.error(requireActivity(), "未检测到课程信息").show());
                     return;
                 }
 //                System.out.println(classDocument);
                 if (classDocument.title().contains("用户登录")) {
-                    Toasty.info(requireActivity(), "cookies失效,请重新登录").show();
+                    requireActivity().runOnUiThread(() -> Toasty.info(requireActivity(), "cookies失效,请重新登录").show());
                     return;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Toasty.error(requireActivity(), Objects.requireNonNull(e.getMessage())).show();
+                requireActivity().runOnUiThread(() -> Toasty.error(requireActivity(), Objects.requireNonNull(e.getMessage())).show());
             }
             Elements classElements = classDocument.select(".ulDiv > ul > li[style]");
             for (Element classElement : classElements) {
