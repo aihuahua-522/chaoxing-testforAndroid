@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -46,7 +45,6 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
     private SignAdapter signAdapter;
     private boolean firstLoad = false;
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -67,48 +65,53 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(requireActivity()).get(PageViewModel.class);
-        // TODO: Use the ViewModel
-        String uid = mViewModel.getCookies().get("_uid");
-        System.out.println("uid = " + uid);
-        String myImg = "http://photo.chaoxing.com/p/" + uid + "_180";
-        mViewModel.getRefresh().observe(getViewLifecycleOwner(), aBoolean -> {
-            String name = (String) mViewModel.getTemp().get("name");
-            root.name.setText(name);
-        });
-        signAdapter = new SignAdapter(requireActivity(), signBeans);
-        signAdapter.setOnClickListener(this);
-        root.signRecycle.setLayoutManager(new LinearLayoutManager(requireActivity()));
-        root.signRecycle.setAdapter(signAdapter);
-        Glide.with(requireActivity())
-                .load(myImg)
-                .placeholder(R.drawable.placeholder)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .dontAnimate()
-                .into(root.imageView);
 
-        root.sign.setOnClickListener(v -> {
-            loadStartSign();
-        });
+        try {
+            mViewModel = ViewModelProviders.of(requireActivity()).get(PageViewModel.class);
+            // TODO: Use the ViewModel
+            String uid = mViewModel.getCookies().get("_uid");
+            System.out.println("uid = " + uid);
+            String myImg = "http://photo.chaoxing.com/p/" + uid + "_180";
+            mViewModel.getRefresh().observe(getViewLifecycleOwner(), aBoolean -> {
+                String name = (String) mViewModel.getTemp().get("name");
+                root.name.setText(name);
+            });
+            signAdapter = new SignAdapter(requireActivity(), signBeans);
+            signAdapter.setOnClickListener(this);
+            root.signRecycle.setLayoutManager(new SignLayoutManager(requireActivity()));
+            root.signRecycle.setAdapter(signAdapter);
+            Glide.with(requireActivity())
+                    .load(myImg)
+                    .placeholder(R.drawable.placeholder)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .dontAnimate()
+                    .into(root.imageView);
 
-        root.autoSign.setOnClickListener(v -> {
-            if (mViewModel.getTemp() != null && isAutoSign.get() == false) {
-                ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
-                if (classBeans == null) {
-                    Toasty.error(requireActivity(), "未获取到课程信息").show();
+            root.sign.setOnClickListener(v -> {
+                loadStartSign();
+            });
+
+            root.autoSign.setOnClickListener(v -> {
+                if (mViewModel.getTemp() != null && !isAutoSign.get()) {
+                    ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+                    if (classBeans == null) {
+                        Toasty.error(requireActivity(), "未获取到课程信息").show();
+                        return;
+                    }
+                    String timestr = (String) SPUtils.get(requireActivity(), "signTime", "60");
+                    HashMap<String, String> temp = new HashMap<>();
+                    temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
+                    temp.put("signTime", timestr);
+                    temp.put("signPlace", Objects.requireNonNull(mViewModel.getTemp().get("signPlace")).toString());
+                    SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans);
+                    isAutoSign.set(true);
                     return;
                 }
-                String timestr = (String) SPUtils.get(requireActivity(), "signTime", "60");
-                HashMap<String, String> temp = new HashMap<>();
-                temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
-                temp.put("signTime", timestr);
-                temp.put("signPlace", Objects.requireNonNull(mViewModel.getTemp().get("signPlace")).toString());
-                SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans);
-                isAutoSign.set(true);
-                return;
-            }
-            Toasty.info(requireActivity(), "已经运行了").show();
-        });
+                Toasty.info(requireActivity(), "已经运行了").show();
+            });
+        } catch (Exception e) {
+            Toasty.error(requireActivity(), e.getMessage()).show();
+        }
     }
 
     private void loadStartSign() {
@@ -136,7 +139,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
             public void run() {
                 System.out.println("签到运行");
                 signBeans.clear();
-                requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0));
+                requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0, ""));
                 for (int i = 0; i < classBeans.size(); i++) {
                     String url = classBeans.get(i).getUrl();
                     try {
@@ -163,6 +166,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                     signBean.setSignState("签到成功");
                                     signBean.setSignTime(ele.select(".Color_Orang").text());
                                     signBeans.add(signBean);
+                                    requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0, ""));
                                     continue;
                                 }
                                 String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
@@ -209,7 +213,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                         }
                     }
                     Toasty.info(requireActivity(), temp.toString()).show();
-                    signAdapter.notifyItemChanged(0);
+                    requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0, ""));
                     isOneStart = false;
                 });
             }

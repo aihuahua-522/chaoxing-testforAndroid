@@ -77,6 +77,7 @@
             android:layout_marginEnd="32dp"
             android:background="@drawable/btn"
             android:text="手动开始签到"
+            android:textColor="@color/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/autoSign" />
@@ -90,6 +91,7 @@
             android:layout_marginEnd="32dp"
             android:background="@drawable/btn"
             android:text="自动后台签到"
+            android:textColor="@color/colorPrimaryDark"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signText" />

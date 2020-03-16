@@ -62,6 +62,7 @@ public class SignService extends IntentService {
     }
 
     public static void startAction(Context context, HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans) {
+
         // 获取WindowManager服务
         WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
         // 设置LayoutParam
@@ -81,7 +82,6 @@ public class SignService extends IntentService {
         // 将悬浮窗控件添加到WindowManager
         View view = LayoutInflater.from(context).inflate(R.layout.float_view, null);
         view.setAlpha((float) 0.6);
-        View floatImg = view.findViewById(R.id.floatImg);
         ScrollView signLogMain = view.findViewById(R.id.signLogMain);
         signLogText = view.findViewById(R.id.signLog);
         view.setOnTouchListener(new View.OnTouchListener() {
@@ -154,7 +154,15 @@ public class SignService extends IntentService {
                 try {
                     handleAction(cookies, temp, classBeans);
                 } catch (Exception e) {
+                    StringBuilder temp2 = new StringBuilder();
+                    temp2.append(e.getLocalizedMessage());
+                    for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+                        temp2.append(stackTraceElement.toString()).append("\n");
+                    }
+                    Message message = new Message();
+                    message.obj = temp2;
                     e.printStackTrace();
+                    handler.sendMessage(message);
                 }
             }
 

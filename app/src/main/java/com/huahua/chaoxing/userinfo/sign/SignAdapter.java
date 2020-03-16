@@ -37,13 +37,15 @@ public class SignAdapter extends RecyclerView.Adapter<SignAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        final SignBean entity = mDataList.get(position);
-        root.setSignBean(entity);
-        //TODO: add your code
-        if (clickListener != null) {
-            root.getRoot().setOnClickListener(v -> clickListener.onClick(holder.mBinding.getRoot(), position));
+        if (position < mDataList.size()) {
+            final SignBean entity = mDataList.get(position);
+            root.setSignBean(entity);
+            if (clickListener != null) {
+                root.getRoot().setOnClickListener(v -> clickListener.onClick(holder.mBinding.getRoot(), position));
+            }
         }
     }
+
 
     public void setOnClickListener(ClickListener clickListener) {
         this.clickListener = clickListener;
