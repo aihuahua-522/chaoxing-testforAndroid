@@ -21,8 +21,8 @@ android {
         applicationId "com.huahua.chaoxing"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 12
-        versionName "1.1.7"
+        versionCode 14
+        versionName "2.0.1"
         dataBinding.enabled = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.huahua
@@ -48,6 +48,18 @@ dependencies {
     implementation 'com.github.GrenderG:Toasty:1.1.2'
     //崩溃日志展示
     implementation "com.simple:spiderman:1.1.4"
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.4.1'
+
+    // xui
+    implementation 'com.github.xuexiangjys:XUI:1.1.3'
+
+    // PictureSelector
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.4.9'
+
+    // 快速捐赠
+    implementation 'com.github.didikee:AndroidDonate:0.1.0'
+    //jsoup
     implementation 'org.jsoup:jsoup:1.9.2'
     implementation 'me.jessyan:autosize:1.2.0'
     implementation 'com.gyf.immersionbar:immersionbar:3.0.0'

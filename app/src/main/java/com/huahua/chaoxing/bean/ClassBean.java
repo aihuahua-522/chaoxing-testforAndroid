@@ -19,6 +19,16 @@ public class ClassBean implements Serializable {
      */
     private String classmate;
 
+    private String workUrl;
+
+    public String getWorkUrl() {
+        return workUrl;
+    }
+
+    public void setWorkUrl(String workUrl) {
+        this.workUrl = workUrl;
+    }
+
     @Override
     public String toString() {
         return "classBean{" +

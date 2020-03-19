@@ -5,6 +5,7 @@ import android.app.Application;
 import com.simple.spiderman.SpiderMan;
 import com.tencent.bugly.Bugly;
 import com.tencent.bugly.beta.Beta;
+import com.xuexiang.xui.XUI;
 
 /**
  * @author by Administrator
@@ -25,6 +26,9 @@ public class MyApplication extends Application {
         SpiderMan.init(this);
         Bugly.init(getApplicationContext(), "adea638331", true);
         Beta.autoCheckUpgrade = true;
+
+        XUI.init(this); //初始化UI框架
+        XUI.debug(true);  //开启UI框架调试日志
 
     }
 }

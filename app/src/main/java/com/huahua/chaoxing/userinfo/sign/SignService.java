@@ -20,8 +20,10 @@ import androidx.annotation.NonNull;
 
 import com.huahua.chaoxing.R;
 import com.huahua.chaoxing.bean.ClassBean;
+import com.huahua.chaoxing.bean.PicBean;
 import com.huahua.chaoxing.bean.SignBean;
 import com.huahua.chaoxing.util.DateUtil;
+import com.huahua.chaoxing.util.HttpUtil;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -32,6 +34,7 @@ import org.jsoup.select.Elements;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -61,7 +64,7 @@ public class SignService extends IntentService {
         super("signService");
     }
 
-    public static void startAction(Context context, HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans) {
+    public static void startAction(Context context, HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans, ArrayList<PicBean> pic) {
 
         // 获取WindowManager服务
         WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
@@ -94,6 +97,7 @@ public class SignService extends IntentService {
                     case MotionEvent.ACTION_DOWN:
                         x = (int) event.getRawX();
                         y = (int) event.getRawY();
+
                         break;
                     case MotionEvent.ACTION_MOVE:
                         int nowX = (int) event.getRawX();
@@ -108,6 +112,8 @@ public class SignService extends IntentService {
                         // 更新悬浮窗控件布局
                         if (windowManager != null) {
                             windowManager.updateViewLayout(view, layoutParams);
+                            signLogMain.fullScroll(ScrollView.FOCUS_DOWN);//滑到底部
+
                         }
                         break;
                     case MotionEvent.ACTION_UP:
@@ -121,10 +127,11 @@ public class SignService extends IntentService {
                         }
                         layoutParams.width = MATCH_PARENT;
                         signLogMain.setVisibility(View.VISIBLE);
-                        signLogMain.fullScroll(ScrollView.FOCUS_DOWN);//滑到底部
                         if (windowManager != null) {
                             windowManager.updateViewLayout(view, layoutParams);
                         }
+                        signLogMain.scrollTo((int) signLogMain.getX(), (int) signLogMain.getY());
+                        signLogMain.fullScroll(ScrollView.FOCUS_DOWN);//滑到底部
                     default:
                         break;
                 }
@@ -137,6 +144,7 @@ public class SignService extends IntentService {
         bundle.putSerializable("cookies", cookies);
         bundle.putSerializable("temp", temp);
         bundle.putSerializable("classBeans", classBeans);
+        bundle.putSerializable("pic", pic);
         intent.putExtras(bundle);
         intent.setAction(ACTION_SIGN);
         context.startService(intent);
@@ -150,9 +158,10 @@ public class SignService extends IntentService {
             HashMap<String, String> cookies = (HashMap<String, String>) intent.getSerializableExtra("cookies");
             HashMap<String, String> temp = (HashMap<String, String>) intent.getSerializableExtra("temp");
             ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) intent.getSerializableExtra("classBeans");
+            ArrayList<PicBean> pic = (ArrayList<PicBean>) intent.getSerializableExtra("pic");
             if (ACTION_SIGN.equals(action)) {
                 try {
-                    handleAction(cookies, temp, classBeans);
+                    handleAction(cookies, temp, classBeans, pic);
                 } catch (Exception e) {
                     StringBuilder temp2 = new StringBuilder();
                     temp2.append(e.getLocalizedMessage());
@@ -170,22 +179,33 @@ public class SignService extends IntentService {
     }
 
 
-    private void handleAction(HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans) throws Exception {
+    private void handleAction(HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans, ArrayList<PicBean> pic) throws Exception {
         StringBuilder sb = new StringBuilder();
         while (true) {
             ArrayList<SignBean> signBeans = new ArrayList<>();
             if (classBeans != null && classBeans.size() != 0) {
                 sb.append("开始签到").append(DateUtil.getThisTime()).append("\n");
                 int success = 0;
+
                 for (int i = 0; i < classBeans.size(); i++) {
+//                    if (Boolean.parseBoolean(temp.get("work"))) {
+//                        String workUrl = classBeans.get(0).getWorkUrl();
+//                          System.out.println(workUrl);
+//                        Connection.Response execute = Jsoup.connect(workUrl).cookies(cookies).timeout(30000).method(Connection.Method.GET).execute();
+//                        System.out.println(workUrl);
+//                        Document parse = execute.parse();
+//                        System.out.println(parse);
+//                    }
                     String url = classBeans.get(i).getUrl();
-                    Connection.Response response = Jsoup.connect(url).cookies(cookies).method(Connection.Method.GET).execute();
+                    HttpUtil.trustEveryone();
+                    Connection.Response response = Jsoup.connect(url).cookies(cookies).timeout(30000).method(Connection.Method.GET).execute();
                     Document document = response.parse();
                     Elements elements = document.select("#startList div .Mct");
                     if (elements == null || elements.size() == 0) {
-                        sb.append(classBeans.get(i).getClassName()).append("无签到活动").append("\n");
+//                        sb.append(classBeans.get(i).getClassName()).append("无签到活动").append("\n");
                         continue;
                     }
+
                     for (Element ele : elements) {
                         String onclick = ele.attr("onclick");
                         System.out.println(onclick);
@@ -200,43 +220,74 @@ public class SignService extends IntentService {
                                 signBean.setSignClass(classBeans.get(i).getClassName());
                                 signBean.setSignName(classBeans.get(i).getClassmate());
                                 success++;
-                                signBean.setSignState("签到成功");
+                                signBean.setSignState(temp.get(activeId));
                                 signBean.setSignTime(ele.select(".Color_Orang").text());
                                 signBeans.add(signBean);
-                                continue;
+                            } else {
+                                // 判断是否是抢答 是抢答执行
+                                if (ele.select(".green") != null && !ele.select(".green").text().contains("签到")) {
+                                    if (Boolean.parseBoolean(temp.get("answer"))) {
+                                        System.out.println(Boolean.parseBoolean(temp.get("answer")));
+                                        String answer = "https://mobilelearn.chaoxing.com/widget/pcAnswer/teaAnswer?activeId="
+                                                + activeId
+                                                + "&classId=" + classBeans.get(i).getClassId()
+                                                + "&fid=" + cookies.get("fid")
+                                                + "&courseId=" + classBeans.get(i).getCourseId();
+                                        System.out.println(answer);
+                                        System.out.println("==============" + activeId + "抢答中=================");
+                                        HttpUtil.trustEveryone();
+                                        Connection.Response signResponse = Jsoup.connect(answer).cookies(cookies).method(Connection.Method.GET).execute();
+                                        Element element = signResponse.parse().body();
+                                        System.out.println("抢答状态" + element.getElementsByTag("body").text());
+                                        SignBean signBean = new SignBean();
+                                        signBean.setSignClass(classBeans.get(i).getClassName());
+                                        signBean.setSignName(classBeans.get(i).getClassmate());
+                                        signBean.setSignState(element.select("p").text());
+                                        signBean.setSignTime(ele.select(".Color_Orang").text());
+                                        temp.put(activeId, "抢答成功");
+                                        signBeans.add(signBean);
+                                        Thread.sleep(1000);
+                                    }
+                                } else {
+                                    Random random = new Random();
+                                    int index = random.nextInt(pic != null ? pic.size() : 1);
+                                    System.out.println(index);
+                                    String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
+                                            + URLEncoder.encode(temp.get("name"), "utf-8")
+                                            + "&address="
+                                            + temp.get("signPlace")
+                                            + "&activeId="
+                                            + activeId
+                                            + "&uid="
+                                            + cookies.get("_uid")
+                                            + "&clientip=&latitude=-1&longitude=-1&fid="
+                                            + cookies.get("fid")
+                                            + "&appType=15&ifTiJiao=1";
+                                    String picId = pic != null ? "&objectId=" + pic.get(index).getObjectId() : "";
+                                    signUrl = signUrl + picId;
+                                    System.out.println(signUrl);
+                                    System.out.println("==============" + activeId + "签到中=================");
+                                    HttpUtil.trustEveryone();
+                                    Connection.Response signResponse = Jsoup.connect(signUrl).cookies(cookies).method(Connection.Method.GET).timeout(30000).execute();
+                                    Element element = signResponse.parse().body();
+                                    String state = element.getElementsByTag("body").text();
+                                    System.out.println("签到状态" + state);
+                                    if ("success".equalsIgnoreCase(state)) {
+                                        success++;
+                                    }
+                                    SignBean signBean = new SignBean();
+                                    signBean.setSignClass(classBeans.get(i).getClassName());
+                                    signBean.setSignName(classBeans.get(i).getClassmate());
+                                    signBean.setSignState(element.getElementsByTag("body").text());
+                                    signBean.setSignTime(ele.select(".Color_Orang").text());
+                                    if ("您已签到过了".equals(signBean.getSignState())) {
+                                        temp.put(activeId, "签到成功");
+                                        success++;
+                                    }
+                                    signBeans.add(signBean);
+                                    Thread.sleep(1000);
+                                }
                             }
-                            String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                    + URLEncoder.encode(temp.get("name"), "utf-8")
-                                    + "&address="
-                                    + temp.get("signPlace")
-                                    + "&activeId="
-                                    + activeId
-                                    + "&uid="
-                                    + cookies.get("_uid")
-                                    + "&clientip=&latitude=-1&longitude=-1&fid="
-                                    + cookies.get("fid")
-                                    + "&appType=15&ifTiJiao=1"
-                                    + "&objectId=75abb7062e22a03fd5612931888b250d";
-                            System.out.println(signUrl);
-                            System.out.println("==============" + activeId + "签到中=================");
-                            Connection.Response signResponse = Jsoup.connect(signUrl).cookies(cookies).method(Connection.Method.GET).timeout(30000).execute();
-                            Element element = signResponse.parse().body();
-                            String state = element.getElementsByTag("body").text();
-                            System.out.println("签到状态" + state);
-                            if ("success".equalsIgnoreCase(state)) {
-                                success++;
-                            }
-                            SignBean signBean = new SignBean();
-                            signBean.setSignClass(classBeans.get(i).getClassName());
-                            signBean.setSignName(classBeans.get(i).getClassmate());
-                            signBean.setSignState(element.getElementsByTag("body").text());
-                            signBean.setSignTime(ele.select(".Color_Orang").text());
-                            if ("您已签到过了".equals(signBean.getSignState())) {
-                                temp.put(activeId, "签到成功");
-                                success++;
-                            }
-                            signBeans.add(signBean);
-                            Thread.sleep(1000);
                         }
                     }
                 }

@@ -16,9 +16,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.huahua.chaoxing.R;
 import com.huahua.chaoxing.bean.ClassBean;
+import com.huahua.chaoxing.bean.PicBean;
 import com.huahua.chaoxing.bean.SignBean;
 import com.huahua.chaoxing.databinding.SignTextFragmentBinding;
 import com.huahua.chaoxing.userinfo.ui.main.PageViewModel;
+import com.huahua.chaoxing.util.HttpUtil;
 import com.huahua.chaoxing.util.SPUtils;
 
 import org.jsoup.Connection;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import es.dmoral.toasty.Toasty;
@@ -99,11 +102,15 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                         return;
                     }
                     String timestr = (String) SPUtils.get(requireActivity(), "signTime", "60");
+                    ArrayList<PicBean> pic = (ArrayList<PicBean>) mViewModel.getTemp().get("pic");
                     HashMap<String, String> temp = new HashMap<>();
                     temp.put("name", Objects.requireNonNull(mViewModel.getTemp().get("name")).toString());
                     temp.put("signTime", timestr);
                     temp.put("signPlace", Objects.requireNonNull(mViewModel.getTemp().get("signPlace")).toString());
-                    SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans);
+                    temp.put("answer", Objects.requireNonNull(mViewModel.getTemp().get("answer")).toString());
+                    temp.put("work", Objects.requireNonNull(mViewModel.getTemp().get("work")).toString());
+
+                    SignService.startAction(requireActivity(), (HashMap<String, String>) mViewModel.getCookies(), temp, classBeans, pic);
                     isAutoSign.set(true);
                     return;
                 }
@@ -139,7 +146,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
             public void run() {
                 System.out.println("签到运行");
                 signBeans.clear();
-                requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0, ""));
+                requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
                 for (int i = 0; i < classBeans.size(); i++) {
                     String url = classBeans.get(i).getUrl();
                     try {
@@ -151,6 +158,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                             continue;
                         }
                         for (Element ele : elements) {
+                            System.out.println(ele);
                             String onclick = ele.attr("onclick");
                             System.out.println(onclick);
                             if (onclick != null && onclick.length() > 0) {
@@ -163,41 +171,77 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                     SignBean signBean = new SignBean();
                                     signBean.setSignClass(classBeans.get(i).getClassName());
                                     signBean.setSignName(classBeans.get(i).getClassmate());
-                                    signBean.setSignState("签到成功");
+                                    signBean.setSignState((String) mViewModel.getTemp().get(activeId));
                                     signBean.setSignTime(ele.select(".Color_Orang").text());
                                     signBeans.add(signBean);
-                                    requireActivity().runOnUiThread(() -> signAdapter.notifyItemChanged(0, ""));
-                                    continue;
+                                    requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
+                                } else {
+                                    // 判断是否是抢答 是抢答执行
+                                    if (ele.select(".green") != null && !ele.select(".green").text().contains("签到")) {
+                                        if ((boolean) mViewModel.getTemp().get("answer")) {
+                                            String answer = "https://mobilelearn.chaoxing.com/widget/pcAnswer/teaAnswer?activeId="
+                                                    + activeId
+                                                    + "&classId=" + classBeans.get(i).getClassId()
+                                                    + "&fid=" + mViewModel.getCookies().get("fid")
+                                                    + "&courseId=" + classBeans.get(i).getCourseId();
+                                            System.out.println(answer);
+
+                                            System.out.println("==============" + activeId + "抢答中=================");
+                                            HttpUtil.trustEveryone();
+                                            Connection.Response signResponse = Jsoup.connect(answer).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
+                                            Element element = signResponse.parse().body();
+                                            System.out.println("抢答状态" + element.getElementsByTag("body").text());
+                                            SignBean signBean = new SignBean();
+                                            signBean.setSignClass(classBeans.get(i).getClassName());
+                                            signBean.setSignName(classBeans.get(i).getClassmate());
+                                            signBean.setSignState(element.select("p").text());
+                                            signBean.setSignTime(ele.select(".Color_Orang").text());
+                                            mViewModel.setTemp(activeId, "抢答成功");
+                                            signBeans.add(signBean);
+                                            requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
+                                            Thread.sleep(1000);
+                                        }
+                                    } else {
+                                        //是签到
+                                        ArrayList<PicBean> pic = (ArrayList<PicBean>) mViewModel.getTemp().get("pic");
+                                        Random random = new Random();
+                                        int index = random.nextInt(pic != null ? pic.size() : 1);
+                                        String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
+                                                + URLEncoder.encode(mViewModel.getTemp().get("name").toString(), "utf-8")
+                                                + "&address="
+                                                + mViewModel.getTemp().get("signPlace")
+                                                + "&activeId="
+                                                + activeId
+                                                + "&uid="
+                                                + mViewModel.getCookies().get("_uid")
+                                                + "&clientip=&latitude=-1&longitude=-1&fid="
+                                                + mViewModel.getCookies().get("fid")
+                                                + "&appType=15&ifTiJiao=1";
+                                        System.out.println(index);
+                                        String picId = pic != null ? "&objectId=" + pic.get(index).getObjectId() : "";
+                                        signUrl = signUrl + picId;
+                                        System.out.println(signUrl);
+                                        System.out.println("==============" + activeId + "签到中=================");
+                                        HttpUtil.trustEveryone();
+                                        Connection.Response signResponse = Jsoup.connect(signUrl).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
+                                        Element element = signResponse.parse().body();
+                                        System.out.println("签到状态" + element.getElementsByTag("body").text());
+                                        SignBean signBean = new SignBean();
+                                        signBean.setSignClass(classBeans.get(i).getClassName());
+                                        signBean.setSignName(classBeans.get(i).getClassmate());
+                                        signBean.setSignState(element.getElementsByTag("body").text());
+                                        signBean.setSignTime(ele.select(".Color_Orang").text());
+                                        if ("您已签到过了".equals(signBean.getSignState())) {
+                                            mViewModel.setTemp(activeId, "签到成功");
+                                        }
+                                        requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
+                                        signBeans.add(signBean);
+                                        Thread.sleep(1000);
+                                    }
                                 }
-                                String signUrl = "https://mobilelearn.chaoxing.com/pptSign/stuSignajax?name="
-                                        + URLEncoder.encode(mViewModel.getTemp().get("name").toString(), "utf-8")
-                                        + "&address="
-                                        + mViewModel.getTemp().get("signPlace")
-                                        + "&activeId="
-                                        + activeId
-                                        + "&uid="
-                                        + mViewModel.getCookies().get("_uid")
-                                        + "&clientip=&latitude=-1&longitude=-1&fid="
-                                        + mViewModel.getCookies().get("fid")
-                                        + "&appType=15&ifTiJiao=1"
-                                        + "&objectId=75abb7062e22a03fd5612931888b250d";
-                                System.out.println(signUrl);
-                                System.out.println("==============" + activeId + "签到中=================");
-                                Connection.Response signResponse = Jsoup.connect(signUrl).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
-                                Element element = signResponse.parse().body();
-                                System.out.println("签到状态" + element.getElementsByTag("body").text());
-                                SignBean signBean = new SignBean();
-                                signBean.setSignClass(classBeans.get(i).getClassName());
-                                signBean.setSignName(classBeans.get(i).getClassmate());
-                                signBean.setSignState(element.getElementsByTag("body").text());
-                                signBean.setSignTime(ele.select(".Color_Orang").text());
-                                if ("您已签到过了".equals(signBean.getSignState())) {
-                                    mViewModel.setTemp(activeId, "签到成功");
-                                }
-                                signBeans.add(signBean);
-                                Thread.sleep(1000);
                             }
                         }
+
 //                            System.out.println(signBeans);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -224,5 +268,6 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
     @Override
     public void onClick(View view, int position) {
         Toasty.info(requireActivity(), "emmmmmmm", Toast.LENGTH_SHORT).show();
+        requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
     }
 }
