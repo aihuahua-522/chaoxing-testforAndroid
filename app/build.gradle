@@ -21,8 +21,8 @@ android {
         applicationId "com.huahua.chaoxing"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 14
-        versionName "2.0.1"
+        versionCode 16
+        versionName "2.0.3"
         dataBinding.enabled = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.huahua
