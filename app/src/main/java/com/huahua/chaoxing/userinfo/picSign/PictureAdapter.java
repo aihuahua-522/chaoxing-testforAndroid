@@ -23,7 +23,7 @@ import java.util.List;
  * PS: Not easy to write code, please indicate.
  */
 
-public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHodle> {
+public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHolder> {
 
     OnItemClickListener onItemClickListener;
     private Context context;
@@ -41,13 +41,13 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHodl
 
     @NonNull
     @Override
-    public ViewHodle onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         root = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.picture_item, parent, false);
-        return new ViewHodle(root);
+        return new ViewHolder(root);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHodle holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Glide.with(context)
                 .load(localMedia.get(position).getData().getThumbnail())
                 .dontAnimate()
@@ -60,11 +60,6 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHodl
         });
     }
 
-    public void removeItem(int position) {
-        System.out.println("adapter 中的position === " + position);
-
-    }
-
     @Override
     public int getItemCount() {
         return localMedia.size();
@@ -74,8 +69,8 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHodl
         void onClick(int position);
     }
 
-    public class ViewHodle extends RecyclerView.ViewHolder {
-        public ViewHodle(@NonNull PictureItemBinding itemView) {
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ViewHolder(@NonNull PictureItemBinding itemView) {
             super(itemView.getRoot());
         }
     }

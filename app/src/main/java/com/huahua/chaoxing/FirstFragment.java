@@ -38,14 +38,12 @@ public class FirstFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        root.goQrLogin.setOnClickListener(v -> {
-            NavHostFragment.findNavController(FirstFragment.this)
-                    .navigate(R.id.action_FirstFragment_to_qrLoginFragment);
-        });
-        root.goUserLogin.setOnClickListener(v -> {
-            NavHostFragment.findNavController(FirstFragment.this)
-                    .navigate(R.id.action_FirstFragment_to_userLoginFragment);
-        });
+        root.goQrLogin.setOnClickListener(v -> NavHostFragment.findNavController(FirstFragment.this)
+                .navigate(R.id.action_FirstFragment_to_qrLoginFragment));
+
+        root.goUserLogin.setOnClickListener(v -> NavHostFragment.findNavController(FirstFragment.this)
+                .navigate(R.id.action_FirstFragment_to_userLoginFragment));
+
         Glide.with(requireActivity())
                 .load("https://api.ixiaowai.cn/mcapi/mcapi.php")
                 .placeholder(R.drawable.placeholder)
@@ -55,9 +53,7 @@ public class FirstFragment extends Fragment {
         HashMap<String, String> map = null;
         try {
             map = new DataUtil(requireActivity()).getMap();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         if (map != null) {

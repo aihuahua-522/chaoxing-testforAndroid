@@ -10,6 +10,8 @@
         android:name="com.huahua.chaoxing.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
+
+
         <action
             android:id="@+id/action_FirstFragment_to_qrLoginFragment"
             app:destination="@id/qrLoginFragment"
@@ -64,22 +66,5 @@
         android:label="activity_user_info"
         app:startDestination="@id/userInfo"
         tools:layout="@layout/activity_user_info" />
-    <fragment
-        android:id="@+id/picSignFragment"
-        android:name="com.huahua.chaoxing.userinfo.picSign.PicSignFragment"
-        android:label="pic_sign_fragment"
-        tools:layout="@layout/pic_sign_fragment" />
-    <fragment
-        android:id="@+id/settingFragment"
-        android:name="com.huahua.chaoxing.userinfo.setting.SettingFragment"
-        android:label="SettingFragment">
-        <action
-            android:id="@+id/action_settingFragment_to_picSignFragment"
-            app:destination="@id/picSignFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
-    </fragment>
 
 </navigation>

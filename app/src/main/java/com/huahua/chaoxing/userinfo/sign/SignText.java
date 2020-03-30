@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.huahua.chaoxing.R;
-import com.huahua.chaoxing.bean.ClassBean;
+import com.huahua.chaoxing.bean.CourseBean;
 import com.huahua.chaoxing.bean.PicBean;
 import com.huahua.chaoxing.bean.SignBean;
 import com.huahua.chaoxing.databinding.SignTextFragmentBinding;
@@ -96,7 +96,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
 
             root.autoSign.setOnClickListener(v -> {
                 if (mViewModel.getTemp() != null && !isAutoSign.get()) {
-                    ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+                    ArrayList<CourseBean> classBeans = (ArrayList<CourseBean>) mViewModel.getTemp().get("classBeans");
                     if (classBeans == null) {
                         Toasty.error(requireActivity(), "未获取到课程信息").show();
                         return;
@@ -122,12 +122,12 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
     }
 
     private void loadStartSign() {
-        ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) mViewModel.getTemp().get("classBeans");
+        ArrayList<CourseBean> classBeans = (ArrayList<CourseBean>) mViewModel.getTemp().get("classBeans");
         startSign(classBeans);
     }
 
 
-    private synchronized void startSign(ArrayList<ClassBean> classBeans) {
+    private synchronized void startSign(ArrayList<CourseBean> classBeans) {
         if (isOneStart == true) {
             Toasty.warning(requireActivity(), "正在签到中了").show();
             return;
@@ -148,7 +148,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                 signBeans.clear();
                 requireActivity().runOnUiThread(() -> signAdapter.notifyDataSetChanged());
                 for (int i = 0; i < classBeans.size(); i++) {
-                    String url = classBeans.get(i).getUrl();
+                    String url = classBeans.get(i).getSignUrl();
                     try {
                         Connection.Response response = Jsoup.connect(url).cookies(mViewModel.getCookies()).method(Connection.Method.GET).execute();
                         Document document = response.parse();
@@ -170,7 +170,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                 if (mViewModel.getTemp().get(activeId) != null) {
                                     SignBean signBean = new SignBean();
                                     signBean.setSignClass(classBeans.get(i).getClassName());
-                                    signBean.setSignName(classBeans.get(i).getClassmate());
+                                    signBean.setSignName(classBeans.get(i).getCourseName());
                                     signBean.setSignState((String) mViewModel.getTemp().get(activeId));
                                     signBean.setSignTime(ele.select(".Color_Orang").text());
                                     signBeans.add(signBean);
@@ -193,7 +193,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                             System.out.println("抢答状态" + element.getElementsByTag("body").text());
                                             SignBean signBean = new SignBean();
                                             signBean.setSignClass(classBeans.get(i).getClassName());
-                                            signBean.setSignName(classBeans.get(i).getClassmate());
+                                            signBean.setSignName(classBeans.get(i).getCourseName());
                                             signBean.setSignState(element.select("p").text());
                                             signBean.setSignTime(ele.select(".Color_Orang").text());
                                             mViewModel.setTemp(activeId, "抢答成功");
@@ -228,7 +228,7 @@ public class SignText extends Fragment implements SignAdapter.ClickListener {
                                         System.out.println("签到状态" + element.getElementsByTag("body").text());
                                         SignBean signBean = new SignBean();
                                         signBean.setSignClass(classBeans.get(i).getClassName());
-                                        signBean.setSignName(classBeans.get(i).getClassmate());
+                                        signBean.setSignName(classBeans.get(i).getCourseName());
                                         signBean.setSignState(element.getElementsByTag("body").text());
                                         signBean.setSignTime(ele.select(".Color_Orang").text());
                                         if ("您已签到过了".equals(signBean.getSignState())) {

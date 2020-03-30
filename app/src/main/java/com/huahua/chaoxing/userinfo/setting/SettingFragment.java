@@ -1,9 +1,6 @@
 package com.huahua.chaoxing.userinfo.setting;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.didikee.donate.AlipayDonate;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +21,7 @@ import com.google.gson.reflect.TypeToken;
 import com.huahua.chaoxing.MainActivity;
 import com.huahua.chaoxing.R;
 import com.huahua.chaoxing.bean.PicBean;
+import com.huahua.chaoxing.cloud.CloudActivity;
 import com.huahua.chaoxing.databinding.SettingFragmentBinding;
 import com.huahua.chaoxing.userinfo.picSign.PicSignFragment;
 import com.huahua.chaoxing.userinfo.ui.main.PageViewModel;
@@ -34,7 +32,6 @@ import com.tencent.bugly.beta.Beta;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -56,17 +53,6 @@ public class SettingFragment extends Fragment {
         return new SettingFragment();
     }
 
-    public boolean hasInstalledAlipayClient() {
-        String ALIPAY_PACKAGE_NAME = "com.eg.android.AlipayGphone";
-        PackageManager pm = requireActivity().getPackageManager();
-        try {
-            PackageInfo info = pm.getPackageInfo(ALIPAY_PACKAGE_NAME, 0);
-            return info != null;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -158,8 +144,12 @@ public class SettingFragment extends Fragment {
                 selectIndex = 3;
             } else if (signTime == 600) {
                 selectIndex = 4;
+            } else if (signTime == 10) {
+                selectIndex = 5;
+            } else if (signTime == 5) {
+                selectIndex = 6;
             }
-            final String[] items = new String[]{"30", "60", "180", "300", "600"};
+            final String[] items = new String[]{"30", "60", "180", "300", "600", "10", "5"};
             final QMUIDialog.CheckableDialogBuilder builder = new QMUIDialog.CheckableDialogBuilder(requireActivity());
             builder.setTitle("请选择扫描时间(单位为秒)")
                     .setCheckedIndex(selectIndex)
@@ -196,8 +186,7 @@ public class SettingFragment extends Fragment {
         });
 
         root.payload.setOnClickListener(v -> {
-            donateAlipay("fkx08925ggrze94jzf3cs68");
-//            openALiPay(requireActivity());
+            donateAlipay();
         });
 
         root.setPic.setOnClickListener(v -> {
@@ -245,50 +234,40 @@ public class SettingFragment extends Fragment {
                         mViewModel.setTemp("answer", "开启".equals(items[builder.getCheckedIndex()]));
                         dialog.dismiss();
                     }).show();
-
         });
+
+        root.yum.setOnClickListener(v -> {
+            startActivity(new Intent(requireActivity(), CloudActivity.class));
+        });
+
 
     }
 
 
     /**
      * 支付宝支付
-     *
-     * @param payCode 收款码后面的字符串；例如：收款二维码里面的字符串为 https://qr.alipay.com/stx00187oxldjvyo3ofaw60 ，则
-     *                payCode = stx00187oxldjvyo3ofaw60
-     *                注：不区分大小写
+     * <p>
+     * payCode = stx00187oxldjvyo3ofaw60
+     * 注：不区分大小写
      */
-    private void donateAlipay(String payCode) {
+    private void donateAlipay() {
         boolean hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(requireActivity());
         if (hasInstalledAlipayClient) {
-            AlipayDonate.startAlipayClient(requireActivity(), payCode);
+            new QMUIDialog.MessageDialogBuilder(requireActivity())
+                    .setTitle("捐赠")
+                    .setMessage("因为加入云签到的缘故 \n 新增加一位作者 所以捐赠有两个人.随" +
+                            "意就行")
+                    .addAction("给花花", (dialog, index) -> {
+                        AlipayDonate.startAlipayClient(requireActivity(), "fkx08925ggrze94jzf3cs68");
+                        dialog.dismiss();
+                    })
+                    .addAction("给小妖", (dialog, index) -> {
+                        AlipayDonate.startAlipayClient(requireActivity(), "fkx06216gw3hly0ugiiyx49");
+                        dialog.dismiss();
+                    })
+                    .show();
         }
     }
 
 
-    /***
-     * 支付宝转账
-     * @param activity
-     * **/
-    public void openALiPay(Activity activity) {
-        String url1 = "intent://platformapi/startapp?saId=10000007&" +
-                "clientVersion=3.7.0.0718&qrcode=https://qr.alipay.com/ffkx08925ggrze94jzf3cs68" +
-                "%3Dweb-other&_t=1472443966571#Intent;" +
-                "scheme=alipayqr;package=com.eg.android.AlipayGphone;end";
-        //String url1=activity.getResources().getString(R.string.alipay);
-        Intent intent = null;
-        Toasty.success(requireActivity(), "感谢您的捐赠！٩(๑❛ᴗ❛๑)۶").show();
-        if (hasInstalledAlipayClient()) {
-            try {
-                intent = Intent.parseUri(url1, Intent.URI_INTENT_SCHEME);
-                activity.startActivity(intent);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                Toasty.error(requireActivity(), "出错啦").show();
-            }
-        } else {
-            Toasty.error(requireActivity(), "您未安装支付宝哦！(>ω･* )ﾉ").show();
-        }
-
-    }
 }

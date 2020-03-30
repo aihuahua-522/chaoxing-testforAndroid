@@ -17,4 +17,12 @@
     <string name="setting_check_update">检查更新</string>
     <string name="setting_help">帮助</string>
     <string name="qq">联系我们</string>
+    <string name="title_item_list">Items</string>
+    <string name="title_item_detail">Item Detail</string>
+    <string name="cloud_sign">云签到</string>
+    <string name="pass">请输入密码</string>
+    <string name="tel">请输入手机号</string>
+    <string name="email">请输入邮箱</string>
+    <string name="submit">提交</string>
+    <string name="signPlace">请输入签到定位地点</string>
 </resources>

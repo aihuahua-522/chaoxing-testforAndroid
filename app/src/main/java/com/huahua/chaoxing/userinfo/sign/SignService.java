@@ -19,7 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.huahua.chaoxing.R;
-import com.huahua.chaoxing.bean.ClassBean;
+import com.huahua.chaoxing.bean.CourseBean;
 import com.huahua.chaoxing.bean.PicBean;
 import com.huahua.chaoxing.bean.SignBean;
 import com.huahua.chaoxing.util.DateUtil;
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Random;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -65,7 +66,7 @@ public class SignService extends IntentService {
         super("signService");
     }
 
-    public static void startAction(Context context, HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans, ArrayList<PicBean> pic) {
+    public static void startAction(Context context, HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<CourseBean> classBeans, ArrayList<PicBean> pic) {
 
         // 获取WindowManager服务
         WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
@@ -158,7 +159,7 @@ public class SignService extends IntentService {
             final String action = intent.getAction();
             HashMap<String, String> cookies = (HashMap<String, String>) intent.getSerializableExtra("cookies");
             HashMap<String, String> temp = (HashMap<String, String>) intent.getSerializableExtra("temp");
-            ArrayList<ClassBean> classBeans = (ArrayList<ClassBean>) intent.getSerializableExtra("classBeans");
+            ArrayList<CourseBean> classBeans = (ArrayList<CourseBean>) intent.getSerializableExtra("classBeans");
             ArrayList<PicBean> pic = (ArrayList<PicBean>) intent.getSerializableExtra("pic");
             if (ACTION_SIGN.equals(action)) {
                 try {
@@ -181,7 +182,7 @@ public class SignService extends IntentService {
     }
 
 
-    private void handleAction(HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<ClassBean> classBeans, ArrayList<PicBean> pic) {
+    private void handleAction(HashMap<String, String> cookies, HashMap<String, String> temp, ArrayList<CourseBean> classBeans, ArrayList<PicBean> pic) {
         StringBuilder sb = new StringBuilder();
         while (true) {
             try {
@@ -190,7 +191,7 @@ public class SignService extends IntentService {
                     sb.append("开始签到").append(DateUtil.getThisTime()).append("\n");
                     int success = 0;
                     for (int i = 0; i < classBeans.size(); i++) {
-                        String url = classBeans.get(i).getUrl();
+                        String url = classBeans.get(i).getSignUrl();
                         HttpUtil.trustEveryone();
                         Connection.Response response = Jsoup.connect(url).cookies(cookies).timeout(30000).method(Connection.Method.GET).execute();
                         Document document = null;
@@ -217,7 +218,7 @@ public class SignService extends IntentService {
                                 if (temp.get(activeId) != null) {
                                     SignBean signBean = new SignBean();
                                     signBean.setSignClass(classBeans.get(i).getClassName());
-                                    signBean.setSignName(classBeans.get(i).getClassmate());
+                                    signBean.setSignName(classBeans.get(i).getCourseName());
                                     success++;
                                     signBean.setSignState(temp.get(activeId));
                                     signBean.setSignTime(ele.select(".Color_Orang").text());
@@ -240,7 +241,7 @@ public class SignService extends IntentService {
                                             System.out.println("抢答状态" + element.getElementsByTag("body").text());
                                             SignBean signBean = new SignBean();
                                             signBean.setSignClass(classBeans.get(i).getClassName());
-                                            signBean.setSignName(classBeans.get(i).getClassmate());
+                                            signBean.setSignName(classBeans.get(i).getCourseName());
                                             signBean.setSignState(element.select("p").text());
                                             signBean.setSignTime(ele.select(".Color_Orang").text());
                                             temp.put(activeId, "抢答成功");
@@ -276,7 +277,7 @@ public class SignService extends IntentService {
                                         }
                                         SignBean signBean = new SignBean();
                                         signBean.setSignClass(classBeans.get(i).getClassName());
-                                        signBean.setSignName(classBeans.get(i).getClassmate());
+                                        signBean.setSignName(classBeans.get(i).getCourseName());
                                         signBean.setSignState(element.getElementsByTag("body").text());
                                         signBean.setSignTime(ele.select(".Color_Orang").text());
                                         if ("您已签到过了".equals(signBean.getSignState())) {
@@ -290,11 +291,16 @@ public class SignService extends IntentService {
                             }
                         }
                     }
-                    for (int i = 0; i < signBeans.size(); i++) {
-                        sb.append(signBeans.get(i).getSignClass() + signBeans.get(i).getSignState() + signBeans.get(i).getSignTime()).append("\n");
+                    if (sb.length() > 200) {
+                        sb.delete(0, sb.length());
+                        System.gc();
                     }
+                    for (int i = 0; i < signBeans.size(); i++) {
+                        sb.append(signBeans.get(i).getSignClass()).append(signBeans.get(i).getSignState()).append(signBeans.get(i).getSignTime()).append("\n");
+                    }
+
                     sb.append(DateUtil.getThisTime()).append("扫描完成 正在进行的个数").append(signBeans.size()).append("\n").append("成功签到个数").append(success).append("\n");
-                    sb.append("扫描周期" + Long.parseLong(temp.get("signTime"))).append("s").append("\n");
+                    sb.append("扫描周期").append(Long.parseLong(Objects.requireNonNull(temp.get("signTime")))).append("s").append("\n");
                     Message message = new Message();
                     message.obj = sb.toString();
                     handler.sendMessage(message);

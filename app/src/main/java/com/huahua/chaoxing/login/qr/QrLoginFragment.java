@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class QrLoginFragment extends Fragment {
 
-    String loginUrl = "http://passport2.chaoxing.com/cloudscanlogin?mobiletip=%e7%94%b5%e8%84%91%e7%ab%af%e7%99%bb%e5%bd%95%e7%a1%ae%e8%ae%a4&pcrefer=http://i.chaoxing.com";
-    DataUtil datautil;
+    private String loginUrl = "http://passport2.chaoxing.com/cloudscanlogin?mobiletip=%e7%94%b5%e8%84%91%e7%ab%af%e7%99%bb%e5%bd%95%e7%a1%ae%e8%ae%a4&pcrefer=http://i.chaoxing.com";
+    private DataUtil datautil;
     private QrLoginViewModel mViewModel;
     private QrLoginFragmentBinding root;
     private String scanningUrl;

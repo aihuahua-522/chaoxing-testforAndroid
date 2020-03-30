@@ -3,6 +3,7 @@ package com.huahua.chaoxing.userinfo.sign;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,14 +30,15 @@ public class SignAdapter extends RecyclerView.Adapter<SignAdapter.ViewHolder> {
     }
 
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         root = DataBindingUtil.inflate(android.view.LayoutInflater.from(mContext), R.layout.sign_text_item, parent, false);
         return new ViewHolder(root);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         if (position < mDataList.size()) {
             final SignBean entity = mDataList.get(position);
             root.setSignBean(entity);

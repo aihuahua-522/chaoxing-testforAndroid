@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 .setAction("Action", null).show());
         ImmersionBar.with(this).statusBarDarkFont(true).init();
 
+
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_PERMISSION_CODE);

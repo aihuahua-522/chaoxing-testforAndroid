@@ -1,5 +1,7 @@
 package com.huahua.chaoxing.util;
 
+import com.huahua.chaoxing.cloud.LoggingInterceptor;
+
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -10,10 +12,14 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.OkHttpClient;
+
 /**
  * @author Administrator
  */
 public class HttpUtil {
+    private static OkHttpClient client;
+
     public static void trustEveryone() {
         try {
             HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
@@ -43,5 +49,15 @@ public class HttpUtil {
             e.printStackTrace();
         }
     }
+
+    public static OkHttpClient getClient() {
+        if (client == null) {
+            client = new OkHttpClient().newBuilder().addInterceptor(new LoggingInterceptor()).build();
+        }
+        return client;
+    }
+
+
+
 }
 

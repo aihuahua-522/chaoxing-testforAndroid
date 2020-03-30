@@ -76,6 +76,7 @@ public class PicSignFragment extends AppCompatActivity {
         Type typeToken = new TypeToken<List<PicBean>>() {
         }.getType();
 
+
         ArrayList<PicBean> picList = new Gson().fromJson(pic, typeToken);
         picBeans.addAll(picList);
         adapter.notifyItemRangeChanged(0, picBeans.size());

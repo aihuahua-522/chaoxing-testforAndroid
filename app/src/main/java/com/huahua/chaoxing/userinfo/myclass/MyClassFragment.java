@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
@@ -16,12 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.huahua.chaoxing.R;
-import com.huahua.chaoxing.bean.ClassBean;
+import com.huahua.chaoxing.bean.CourseBean;
 import com.huahua.chaoxing.bean.PicBean;
 import com.huahua.chaoxing.databinding.FragmentMyClassListBinding;
 import com.huahua.chaoxing.userinfo.ui.main.PageViewModel;
 import com.huahua.chaoxing.util.SPUtils;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +31,7 @@ import org.jsoup.select.Elements;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,7 +50,7 @@ public class MyClassFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private FragmentMyClassListBinding root;
     private PageViewModel viewModel;
-    private ArrayList<ClassBean> classBeans = new ArrayList<>();
+    private ArrayList<CourseBean> classBeans = new ArrayList<>();
     private MyItemRecyclerViewAdapter adapter;
 
     public MyClassFragment() {
@@ -80,7 +83,6 @@ public class MyClassFragment extends Fragment {
             getAllClass();
         }
         initPic();
-
     }
 
     private void initPic() {
@@ -96,77 +98,22 @@ public class MyClassFragment extends Fragment {
     }
 
     private void getAllClass() {
-        classBeans.clear();
         new Thread(() -> {
-            String getClassUrl = "http://mooc1-2.chaoxing.com/visit/courses";
             String getName = "http://i.chaoxing.com/base";
-
             try {
-                if (viewModel == null) {
-                    viewModel = ViewModelProviders.of(requireActivity()).get(PageViewModel.class);
-                    return;
-                }
                 Map<String, String> cookies = viewModel.getCookies();
                 Elements select = Jsoup.connect(getName).cookies(cookies).timeout(30000).get().select(".user-name");
                 String text = select != null ? select.text() : "获取失败";
                 System.out.println("name = " + text);
                 viewModel.setTemp("name", text);
-
-                Document classDocument = Jsoup.connect(getClassUrl).timeout(30000).cookies(cookies).get();
-
-                if (classDocument == null) {
-                    requireActivity().runOnUiThread(() -> Toasty.error(requireActivity(), "未检测到课程信息").show());
-                    return;
-                }
-
-                if (classDocument.title().contains("用户登录")) {
-                    requireActivity().runOnUiThread(() -> Toasty.info(requireActivity(), "cookies失效,请重新登录").show());
-                    return;
-                }
-
-                Elements classElements = classDocument.select(".ulDiv > ul > li[style]");
-                if (classElements == null) {
-                    requireActivity().runOnUiThread(() -> Toasty.error(requireActivity(), "classElements未空").show());
-                    return;
-                }
-                for (Element classElement : classElements) {
-                    ClassBean classBean = new ClassBean();
-                    String courseId = classElement.select("[name = courseId]").attr("value");
-                    String classId = classElement.select("[name = classId]").attr("value");
-                    //课程名
-                    String className = classElement.select(".clearfix > a ").attr("title");
-                    //班级名
-                    String classmate = classElement.select(".Mconright > p ").get(2).attr("title");
-                    //教师
-                    String teacher = classElement.select(".Mconright > p ").get(0).attr("title");
-                    //任务地址
-                    String url = "https://mobilelearn.chaoxing.com/widget/pcpick/stu/index?courseId=" + courseId + "&jclassId=" + classId;
-
-                    ///mycourse/studentcourse?courseId=206190313&clazzid=12344429&vc=1&cpi=68128013&enc=1700c5697f8739971e4cb50b63adfc86
-                    //https://mooc1-1.chaoxing.com/work/getAllWork?classId=21340000&courseId=210431164&isdisplaytable=2&mooc=1&ut=s&enc=c8ba685957e54c6b39b88798da1fa240&cpi=68128013&openc=5f049b99df4aab447690238b323f0329
-
-
-                    // 作业地址
-                    String workUrl = "https://mooc1-1.chaoxing.com/" + classElement.select(" li > div.Mcon1img.httpsClass > a:nth-child(1)").attr("href");
-
-
-                    classBean.setWorkUrl(workUrl);
-                    classBean.setCourseId(courseId);
-                    classBean.setClassId(classId);
-                    classBean.setClassName(className);
-                    classBean.setTeacher(teacher);
-                    classBean.setUrl(url);
-                    classBean.setClassmate(classmate);
-                    classBeans.add(classBean);
-                }
+                classBeans = getClassBeans((HashMap<String, String>) cookies);
                 requireActivity().runOnUiThread(() -> {
-                    adapter.notifyItemChanged(0);
                     viewModel.setTemp("classBeans", classBeans);
                     viewModel.setRefresh();
                     viewModel.setTemp("signPlace", SPUtils.get(requireActivity(), "signPlace", ""));
                     viewModel.setTemp("work", SPUtils.get(requireActivity(), "work", false));
                     viewModel.setTemp("answer", SPUtils.get(requireActivity(), "answer", false));
-                    //System.out.println("数据条数" + classBeans.size());
+                    System.out.println("数据条数" + classBeans.size());
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -175,8 +122,45 @@ public class MyClassFragment extends Fragment {
         }).start();
     }
 
+    private ArrayList<CourseBean> getClassBeans(HashMap<String, String> cookies) throws Exception {
+        // 4. 登录成功-->将课程封装list
+        String getClassUrl = "http://mooc1-2.chaoxing.com/visit/courses";
+        Document classDocument = Jsoup.connect(getClassUrl).cookies(cookies).method(Connection.Method.GET)
+                .timeout(30000).get();
+        if (classDocument.title().contains("用户登录")) {
+            // TODO 这里可以发送邮件 重新登录
+            Toasty.error(requireActivity(), "cookie可能失效,推荐重新提交").show();
+        }
+        Elements allClassElement = classDocument.select(".ulDiv > ul > li[style]");
+        for (Element classElement : allClassElement) {
+            String courseId = classElement.select("[name = courseId]").attr("value");
+            String href = classElement.select(" .Mcon1img > a").attr("href");
+            String enc = href.split("enc=")[1];
+            String cpi = href.split("cpi=")[1];
+            String classId = classElement.select("[name = classId]").attr("value");
+            //课程名
+            String courseName = classElement.select(".clearfix > a ").attr("title");
+            //班级名
+            String className = classElement.select(".Mconright > p ").get(2).attr("title");
+            //教师
+            String teacher = classElement.select(".Mconright > p ").get(0).attr("title");
+            //任务地址
+            String signUrl = "https://mobilelearn.chaoxing.com/widget/pcpick/stu/index?courseId=" + courseId + "&jclassId=" + classId;
+
+            String workUrl = "https://mooc1-1.chaoxing.com/work/getAllWork?classId=" + classId + "&courseId=" + courseId + "&isdisplaytable=2&mooc=1&ut=s&enc=" + enc + "&cpi=" + cpi;
+
+            classBeans.add(new CourseBean(null, signUrl, courseId, className, courseName, classId, teacher, workUrl));
+        }
+        requireActivity().runOnUiThread(() -> {
+            adapter.notifyDataSetChanged();
+            adapter.notifyItemChanged(0);
+        });
+        SPUtils.put(requireActivity(), "class", new Gson().toJson(classBeans));
+        return classBeans;
+    }
+
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mListener = this::onListFragmentInteraction;
     }
@@ -187,12 +171,12 @@ public class MyClassFragment extends Fragment {
         mListener = null;
     }
 
-    public void onListFragmentInteraction(ClassBean item) {
+    public void onListFragmentInteraction(CourseBean item) {
         Toasty.info(requireActivity(), item.toString()).show();
     }
 
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(ClassBean item);
+        void onListFragmentInteraction(CourseBean item);
     }
 }
